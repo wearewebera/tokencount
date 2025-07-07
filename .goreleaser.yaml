@@ -1,0 +1,78 @@
+project_name: tokencount
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
+
+archives:
+  - id: default
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+release:
+  github:
+    owner: wearewebera
+    name: tokencount
+  name_template: "{{.ProjectName}}-v{{.Version}}"
+  header: |
+    ## Token Count v{{.Version}}
+    
+    A fast command-line tool to estimate token counts for AI models.
+    
+    ### Installation
+    
+    Download the appropriate binary for your platform from the assets below.
+    
+    #### macOS/Linux
+    ```bash
+    # Download and extract (replace with your platform)
+    tar -xzf tokencount_*.tar.gz
+    
+    # Make executable
+    chmod +x tokencount
+    
+    # Move to PATH (optional)
+    sudo mv tokencount /usr/local/bin/
+    ```
+    
+    #### Windows
+    ```powershell
+    # Extract the zip file and run tokencount.exe
+    ```
