@@ -19,6 +19,10 @@ builds:
         goarch: arm64
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
+    # macOS specific flags to reduce security warnings
+    flags:
+      - -trimpath
+    mod_timestamp: '{{ .CommitTimestamp }}'
 
 archives:
   - id: default
@@ -60,10 +64,27 @@ release:
     
     Download the appropriate binary for your platform from the assets below.
     
-    #### macOS/Linux
+    #### macOS
     ```bash
-    # Download and extract (replace with your platform)
-    tar -xzf tokencount_*.tar.gz
+    # Download and extract
+    tar -xzf tokencount_Darwin_*.tar.gz
+    
+    # IMPORTANT: Remove macOS quarantine flag
+    xattr -d com.apple.quarantine tokencount
+    
+    # Make executable
+    chmod +x tokencount
+    
+    # Move to PATH (optional)
+    sudo mv tokencount /usr/local/bin/
+    ```
+    
+    **Note for macOS users**: The binary is not code-signed. macOS may block it on first run. Use the `xattr` command above to remove the quarantine flag, or go to System Settings > Privacy & Security to allow it.
+    
+    #### Linux
+    ```bash
+    # Download and extract
+    tar -xzf tokencount_Linux_*.tar.gz
     
     # Make executable
     chmod +x tokencount

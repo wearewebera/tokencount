@@ -18,10 +18,29 @@ A fast command-line tool to estimate token counts for AI models (GPT-3.5, GPT-4,
 
 Download the latest release from the [releases page](https://github.com/wearewebera/tokencount/releases).
 
-#### macOS/Linux
+#### macOS
 ```bash
-# Download and extract (replace with your platform and version)
+# Download and extract (replace with your architecture: x86_64 or arm64)
 tar -xzf tokencount_Darwin_x86_64.tar.gz
+
+# IMPORTANT: Remove macOS quarantine flag (required for unsigned binaries)
+xattr -d com.apple.quarantine tokencount
+
+# Make executable
+chmod +x tokencount
+
+# Move to PATH (optional)
+sudo mv tokencount /usr/local/bin/
+```
+
+**Note**: macOS may block the binary because it's not code-signed. Use the `xattr` command above, or:
+- Right-click the binary and select "Open", then click "Open" in the dialog
+- Or go to System Settings > Privacy & Security to allow it after trying to run it
+
+#### Linux
+```bash
+# Download and extract (replace with your architecture)
+tar -xzf tokencount_Linux_x86_64.tar.gz
 
 # Make executable
 chmod +x tokencount
