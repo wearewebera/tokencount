@@ -61,7 +61,6 @@ jobs:
           tar -xzf tokencount_Darwin_${{ matrix.arch }}.tar.gz
 
       - name: Sign and Notarize
-        if: ${{ secrets.MACOS_CERTIFICATE != '' }}
         env:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
           MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
@@ -70,21 +69,30 @@ jobs:
           NOTARIZATION_PASSWORD: ${{ secrets.NOTARIZATION_PASSWORD }}
           TEAM_ID: ${{ secrets.TEAM_ID }}
         run: |
-          .github/scripts/sign-and-notarize.sh tokencount scripts/entitlements.plist
+          if [ -n "$MACOS_CERTIFICATE" ]; then
+            .github/scripts/sign-and-notarize.sh tokencount scripts/entitlements.plist
+          else
+            echo "⚠️ Skipping signing - no certificate configured"
+          fi
 
       - name: Re-package signed binary
-        if: ${{ secrets.MACOS_CERTIFICATE != '' }}
         run: |
-          tar -czf tokencount_Darwin_${{ matrix.arch }}_signed.tar.gz tokencount
+          if [ -n "${{ secrets.MACOS_CERTIFICATE }}" ]; then
+            tar -czf tokencount_Darwin_${{ matrix.arch }}_signed.tar.gz tokencount
+          fi
 
       - name: Upload signed binary
-        if: ${{ secrets.MACOS_CERTIFICATE != '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
         run: |
-          RELEASE_ID=$(gh api repos/${{ github.repository }}/releases/tags/${{ github.ref_name }} --jq '.id')
-          gh api repos/${{ github.repository }}/releases/${RELEASE_ID}/assets \
-            --method POST \
-            --field name="tokencount_Darwin_${{ matrix.arch }}_signed.tar.gz" \
-            --field label="macOS ${{ matrix.arch }} (signed)" \
-            --input tokencount_Darwin_${{ matrix.arch }}_signed.tar.gz
+          if [ -n "$MACOS_CERTIFICATE" ] && [ -f "tokencount_Darwin_${{ matrix.arch }}_signed.tar.gz" ]; then
+            RELEASE_ID=$(gh api repos/${{ github.repository }}/releases/tags/${{ github.ref_name }} --jq '.id')
+            gh api repos/${{ github.repository }}/releases/${RELEASE_ID}/assets \
+              --method POST \
+              --field name="tokencount_Darwin_${{ matrix.arch }}_signed.tar.gz" \
+              --field label="macOS ${{ matrix.arch }} (signed)" \
+              --input tokencount_Darwin_${{ matrix.arch }}_signed.tar.gz
+          else
+            echo "⚠️ No signed binary to upload"
+          fi
