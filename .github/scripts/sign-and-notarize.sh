@@ -72,9 +72,12 @@ xcrun notarytool submit "$BINARY_PATH.zip" \
   --team-id "$TEAM_ID" \
   --wait
 
-# Staple
-echo "📌 Stapling..."
-xcrun stapler staple "$BINARY_PATH"
+# Staple (note: standalone binaries can't be stapled, only disk images and packages)
+echo "📌 Attempting to staple (may fail for standalone binaries)..."
+xcrun stapler staple "$BINARY_PATH" || {
+  echo "ℹ️  Stapling failed (expected for standalone binaries)"
+  echo "✅ The binary is still notarized and will pass Gatekeeper checks"
+}
 
 # Cleanup
 rm -f "$BINARY_PATH.zip"
