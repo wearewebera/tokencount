@@ -87,12 +87,10 @@ jobs:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
         run: |
           if [ -n "$MACOS_CERTIFICATE" ] && [ -f "tokencount_Darwin_${{ matrix.arch }}_signed.tar.gz" ]; then
-            RELEASE_ID=$(gh api repos/${{ github.repository }}/releases/tags/${{ github.ref_name }} --jq '.id')
-            gh api repos/${{ github.repository }}/releases/${RELEASE_ID}/assets \
-              --method POST \
-              --field name="tokencount_Darwin_${{ matrix.arch }}_signed.tar.gz" \
-              --field label="macOS ${{ matrix.arch }} (signed)" \
-              --input tokencount_Darwin_${{ matrix.arch }}_signed.tar.gz
+            # Use gh release upload command instead of API
+            gh release upload ${{ github.ref_name }} \
+              tokencount_Darwin_${{ matrix.arch }}_signed.tar.gz \
+              --clobber
           else
             echo "⚠️ No signed binary to upload"
           fi
