@@ -29,9 +29,20 @@ echo "🔍 Finding certificate identity..."
 IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep "Developer ID Application" | head -1 | awk -F'"' '{print $2}')
 
 if [ -z "$IDENTITY" ]; then
-  echo "❌ No Developer ID Application certificate found in keychain"
+  echo "⚠️  No 'Developer ID Application' certificate found"
+  echo "📋 Available certificates:"
   security find-identity -v -p codesigning "$KEYCHAIN_PATH"
-  exit 1
+  
+  # Try to find any Apple Developer certificate as fallback
+  IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep -E "Apple Development|Developer ID" | head -1 | awk -F'"' '{print $2}')
+  
+  if [ -z "$IDENTITY" ]; then
+    echo "❌ No suitable certificate found for code signing"
+    exit 1
+  fi
+  
+  echo "⚠️  Using certificate: $IDENTITY"
+  echo "⚠️  Note: For distribution outside the App Store, you need a 'Developer ID Application' certificate"
 fi
 
 echo "✅ Found identity: $IDENTITY"

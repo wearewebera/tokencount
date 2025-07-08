@@ -10,12 +10,21 @@ This guide explains how to set up code signing and notarization for the tokencou
 
 ## Step 1: Create Developer ID Certificate
 
+**IMPORTANT**: You need a "Developer ID Application" certificate for distributing apps outside the Mac App Store. Regular "Apple Development" certificates won't work for notarization.
+
 1. Sign in to [Apple Developer](https://developer.apple.com)
 2. Go to Certificates, Identifiers & Profiles
 3. Click the + button to create a new certificate
-4. Select "Developer ID Application" and continue
+4. **Select "Developer ID Application"** (NOT "Apple Development")
+   - This is under the "Software" section
+   - Required for apps distributed outside the Mac App Store
 5. Follow the instructions to create a CSR using Keychain Access
 6. Download and install the certificate
+
+If you only have an "Apple Development" certificate:
+- The signing will work but notarization will fail
+- Users will still see Gatekeeper warnings
+- You need to create a proper "Developer ID Application" certificate
 
 ## Step 2: Find Your Certificate Name
 
