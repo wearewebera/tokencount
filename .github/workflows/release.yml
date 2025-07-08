@@ -61,7 +61,7 @@ jobs:
           tar -xzf tokencount_Darwin_${{ matrix.arch }}.tar.gz
 
       - name: Sign and Notarize
-        if: env.MACOS_CERTIFICATE != ''
+        if: ${{ secrets.MACOS_CERTIFICATE != '' }}
         env:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
           MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
@@ -73,12 +73,12 @@ jobs:
           .github/scripts/sign-and-notarize.sh tokencount scripts/entitlements.plist
 
       - name: Re-package signed binary
-        if: env.MACOS_CERTIFICATE != ''
+        if: ${{ secrets.MACOS_CERTIFICATE != '' }}
         run: |
           tar -czf tokencount_Darwin_${{ matrix.arch }}_signed.tar.gz tokencount
 
       - name: Upload signed binary
-        if: env.MACOS_CERTIFICATE != ''
+        if: ${{ secrets.MACOS_CERTIFICATE != '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

@@ -24,12 +24,24 @@ security import certificate.p12 -P "$MACOS_CERTIFICATE_PWD" -A -t cert -f pkcs12
 security list-keychain -d user -s "$KEYCHAIN_PATH"
 rm certificate.p12
 
+# Find the certificate identity
+echo "🔍 Finding certificate identity..."
+IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep "Developer ID Application" | head -1 | awk -F'"' '{print $2}')
+
+if [ -z "$IDENTITY" ]; then
+  echo "❌ No Developer ID Application certificate found in keychain"
+  security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+  exit 1
+fi
+
+echo "✅ Found identity: $IDENTITY"
+
 # Sign the binary
 echo "🔏 Signing $BINARY_PATH..."
 codesign --force \
   --options runtime \
   --entitlements "$ENTITLEMENTS" \
-  --sign "$MACOS_CERTIFICATE_NAME" \
+  --sign "$IDENTITY" \
   --timestamp \
   --keychain "$KEYCHAIN_PATH" \
   "$BINARY_PATH"
